@@ -65,26 +65,19 @@ X_tfidf = tfidf_vectorizer.fit_transform(df['Utterance'])
 # Convert the TF-IDF matrix to a DataFrame
 X_tfidf_df = pd.DataFrame(X_tfidf.toarray(), columns=tfidf_vectorizer.get_feature_names_out())
 
-# ------------------------------------------ DATA TRAIN, VALIDATION, TESTING
+# Test
+# ------------------------------------------ SPLIT THE DATASET
+# Split the data into training, validation, and test sets
+X_train, X_temp, y_train, y_temp = train_test_split(X_tfidf_df, df['Emotion'], test_size=0.3, random_state=42)
+X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
 
-# Load your full dataset
-df = pd.read_csv('cleaned_dataset_no_duplicates.csv')
+# ------------------------------------------ TRAIN THE MODEL
+# Initialize and train the model
+model = RandomForestClassifier()
+model.fit(X_train, y_train)
 
-# Define the split ratios
-train_ratio = 0.7
-validation_ratio = 0.15
-test_ratio = 0.15
-
-# First, split into training and temp datasets
-train_data, temp_data = train_test_split(df, test_size=(1 - train_ratio), random_state=42)
-
-# Then split the temp dataset into validation and test datasets
-validation_data, test_data = train_test_split(temp_data, test_size=(test_ratio / (test_ratio + validation_ratio)), random_state=42)
-
-# Save the splits to separate CSV files
-train_data.to_csv("train_data.csv", index=False)
-validation_data.to_csv("validation_data.csv", index=False)
-test_data.to_csv("test_data.csv", index=False)
-
-print("Datasets successfully split and saved!")
-
+# Evaluate the model
+validation_accuracy = model.score(X_val, y_val)
+test_accuracy = model.score(X_test, y_test)
+print(f"Validation Accuracy: {validation_accuracy}")
+print(f"Test Accuracy: {test_accuracy}")
